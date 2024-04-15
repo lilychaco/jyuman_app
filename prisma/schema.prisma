@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+model User {
+  id           String        @id @default(uuid())
+  lineId       String
+  name         String
+  phoneNumber  String
+  lineName     String
+  patients     Patient[]
+  reservations Reservation[]  // この行を追加
+}
+
+model Patient {
+  id           String       @id @default(uuid())
+  name         String
+  furikana     String
+  gender       String
+  birthDate    DateTime
+  belonging    String
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  reservations Reservation[]
+}
+
+model Reservation {
+  id          String    @id @default(uuid())
+  patientId   String
+  calendarId  String
+  userId      String
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+  schedule    Schedule  @relation(fields: [calendarId], references: [id])
+}
+
+model Schedule {
+  id          String    @id @default(uuid())
+  timeSlotId  String
+  date        DateTime
+  timeSlot    Time      @relation(fields: [timeSlotId], references: [id])
+  reservations Reservation[]
+}
+
+model Time {
+  id          String    @id @default(uuid())
+  startTime   DateTime
+  endTime     DateTime
+  schedules   Schedule[]
+}
